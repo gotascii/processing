@@ -1,0 +1,12 @@
+average speed = distance / time
+velocity = direction, speed vector
+acceleration = change in velocity / time
+an external force causes acceleration
+
+a = F/m
+
+A large m: Requires a large F to cause a substantial change in a.
+
+inertia, an objects resistance to a change in a.
+inertia = m
+

@@ -1,0 +1,109 @@
+PDE
+---
+Sketch -> Import Library...
+Tools -> Color Selector
+
+BASIC SYNTAX
+---
+0,0 top right
+y increases downward
+
+x,y is top left
+rect(x,y,w,h)
+
+x,y is center
+rectMode(CENTER)
+rect(x,y,w,h)
+
+rectMode(CORNERS)
+rect(x1,y1,x2,y2)
+
+x,y is center
+ellipse(x,y,w,h)
+
+x,y is top left
+ellipseMode(CORNER)
+ellipse(x,y,w,h)
+
+ellipseMode(CORNERS)
+ellipse(x1,y1,x2,y2)
+
+noStroke()
+noFill()
+
+background(255)
+stroke(255)
+fill(50)
+
+color specifiction
+binary
+r,g,b
+#ffffff
+
+class Omfg {
+  color omfgs_color = color(#334455);
+  float x = 1;
+  Omfg() {
+    construct!;
+  }
+  
+  void meth() {
+    get_hy!;
+  }
+}
+
+int[] myArray = {0,1,2,3};
+
+int[][] myArray = {  {0, 1, 2, 3},
+                     {3, 2, 1, 0},
+                     {3, 5, 6, 1},
+                     {3, 8, 3, 4}  };
+
+int[] myArray = new int[10];
+for (int i = 0; i < myArray.length; i++) {
+ myArray[i] = 0;
+}
+
+mouseX, x coordinate of mouse
+mouseY, y coordinate of mouse
+pmouseX, previous x coordinate of mouse
+pmouseY, previous y coordinate of mouse
+
+TRIG
+---
+unit circle
+  radius 1 unit
+  center is origin
+polar coordinate
+  (r,theta)
+  r is the radius
+  theta angle of rotation in radians
+radians
+  0pi and 2pi at start of circle
+  pi is 180deg
+  ex: polar coordinate (4, pi) is cartesian coordinate (-4, 0)
+pi
+  circumference / diameter
+arc length
+  radius * theta
+  ex: polar coordinate (3, pi/4) has arc length 3pi/4
+triangular relationships
+  o, opposite hypotenuse
+  a, adjacent hypotenuse
+  h, hypotenuse
+  sin(theta) = o/h
+  cos(theta) = a/h
+  tan(theta) = o/a
+  tan(theta) = sin(theta)/cos(theta)
+  "soh-cah-toa"
+cartesian conversion
+  r is the hypotenuse
+  x is the adjacent, x = cos(theta)*r
+  y is the opposite, y = sin(theta)*r
+  radians(angle); converts angle to radians
+  degrees(theta); converts radians to angle
+  flat radius = 1;
+  float angle = 45;
+  float theta = radians(angle);
+  float x = cos(theta) * radius;
+  float x = sin(theta) * radius;

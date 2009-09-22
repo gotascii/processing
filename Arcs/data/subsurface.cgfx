@@ -1,0 +1,274 @@
+// Sub-Scatter lighting hack based on: http://www.gamedev.net/community/forums/topic.asp?topic_id=481494
+
+texture ColorTexture;
+sampler2D ColorSampler = sampler_state {
+  texture = <ColorTexture>;
+  WrapS = Wrap;        
+  WrapT = Wrap;
+  MinFilter = Linear;
+  MagFilter = Linear;
+  MipFilter = Linear;
+};
+
+// transformations
+
+uniform float4x4 worldViewProj : WORLDVIEWPROJECTION;
+uniform float4x4 matViewIT : VIEWINVERSETRANSPOSE;
+uniform float4x4 matModelView : MODELVIEWMATRIX;
+uniform float4x4 matWorld : WORLDMATRIX;
+uniform float4x4 matView: VIEWMATRIX;
+uniform float4x4 SlicerXf : SLICEMATRIX;
+
+float time;
+
+float3 cameraPos;
+float4 lightPos;
+// attenuation de la lumire (constante, linéaire, quadratique)
+float kC, kL, kQ;
+
+float useSpecular = 0;
+float specularLevel = 64.0;
+
+float4 fogColor;
+float fogDensity;
+float fogStart;
+float fogEnd;
+
+float MaterialThickness = 0.6f;
+float3 ExtinctionCoefficient = float3(0.30, 0.82, 0.92);
+uniform float4 LightColor = float4(1, 1, 1, 1);
+uniform float4 BaseColor = float4(0.92, 0.92, 0.92, 1);
+uniform float4 SpecColor = float4(1, 1, 1, 1);
+float RimScalar = 0.7;
+
+// define surface color
+float3 LiteColor : Diffuse <
+	string UIName = "Bright Surface Color";
+	string UIWidget = "Color";
+> = {0.5, 0.0, 0.0};
+
+float3 DarkColor : Diffuse <
+	string UIName = "Dark Surface Color";
+	string UIWidget = "Color";
+> = {0.0f, 0.0f, 0.0f};
+
+// define tone color
+float3 WarmColor : Diffuse <
+	string UIName = "Gooch warm tone";
+	string UIWidget = "Color";
+> = {0.5, 0.05, 0.5};
+
+float3 CoolColor : Diffuse <
+	string UIName = "Gooch cool tone";
+	string UIWidget = "Color";
+> = {0.5, 0.05, 0.05};
+
+struct vertexInput {
+  float3 position : POSITION;
+  float3 normal : NORMAL;
+  float2 uv : TEXCOORD0;
+  float4 diffuse : COLOR;
+};
+
+struct vertexOutput {
+  float4 position : POSITION;   
+  float2 uv : TEXCOORD0;
+  float3 normal : TEXCOORD1;
+  float3 lightVec : TEXCOORD2;
+  float3 viewVec : TEXCOORD3;
+  float4 diffuse : TEXCOORD4;
+  float depth : TEXCOORD5;
+  float3 worldPos	: TEXCOORD6;
+};
+
+vertexOutput VS_SubScatter(in vertexInput IN) {
+  vertexOutput OUT = (vertexOutput)0;
+  float4 Po = float4(IN.position, 1);
+	OUT.position = mul(worldViewProj, Po);
+
+  float3 worldpos = mul(matWorld, Po).xyz;	// in "world" coordinates
+  float3 viewpos = mul(matView, float4(worldpos,1.0)).xyz;	// in "view" coordinates
+	OUT.worldPos = worldpos;
+
+	float4 N = float4(IN.normal, 1);
+  OUT.normal = normalize(mul(matViewIT, N));
+
+	// if w is 1 its a point light, if 0 its a directional light
+	float3 viewL = mul(matView, lightPos).xyz;
+	//float3 L = (viewpos.xyz*lightPos.w) - viewL;
+	float3 L = viewL - (viewpos.xyz*lightPos.w);
+	OUT.lightVec = L;
+
+	OUT.viewVec = float3(matViewIT[0].w, matViewIT[1].w, matViewIT[2].w) - viewpos.xyz;
+	//OUT.viewVec = normalize( float3(matViewIT[0].w, matViewIT[1].w, matViewIT[2].w) - viewpos.xyz );
+
+#ifdef FOG
+	float3 viewE = mul(matView, float4(cameraPos,1)).xyz;
+	float dist = distance(viewE, viewpos.xyz);
+	OUT.depth = dist;
+#endif
+
+#ifdef FLIPY
+	OUT.uv = float2(IN.uv.x, 1.0-IN.uv.y);
+#else
+	OUT.uv = IN.uv;
+#endif
+
+	OUT.diffuse = IN.diffuse;
+  return OUT;
+}
+
+float halfLambert(in vec3 vect1, in vec3 vect2) {  
+  float product = dot(vect1, vect2);
+  return (product+1)*0.5;	// convert to range [0..1]
+}
+
+float blinnPhongSpecular(in float3 normalVec, in float3 lightVec, in float specPower) {  
+  float3 halfAngle = normalize(normalVec + lightVec);
+  return pow(clamp(0.0,1.0,dot(normalVec,halfAngle)),specPower);
+}
+
+float4 PS_SubScatter(in vertexOutput IN) : COLOR {
+	float4 FinalColor = 0;
+	//float4 diffuseTexel = tex2D(ColorSampler, IN.uv);
+
+#ifdef ATTENUATION
+	// distance attenuation	
+	float d = distance(lightPos.xyz,  IN.worldPos.xyz);
+	float attenuation = 1.0 / (kC + kL*d + kQ*d*d);	
+#endif
+
+	float3 vL = normalize(IN.lightVec);
+	float3 vV = normalize(IN.viewVec);
+	float3 vN = normalize(IN.normal);
+
+	float NdotL = max(dot(vN, vL), 0);
+	
+	float4 ambient = 0;
+	float4 diffuse = 0;
+	float4 specular = 0;
+	float2 texcoord = 0;
+
+	//ambient = ambient * diffuseTexel;
+
+	diffuse = float4(halfLambert(vN, vL)); // * diffuseTexel;
+	diffuse *= IN.diffuse;
+
+/*
+	// goochy 
+	float mixer = 2*halfLambert(vN, vL);//(NdotL + 1.0) * 0.5;
+	float3 surfColor = lerp( DarkColor, LiteColor, mixer );
+	float3 toneColor = lerp( CoolColor, WarmColor, mixer );	
+	float3 mixColor = surfColor + toneColor;
+	diffuse = float4( mixColor, 1 );
+*/
+
+	//float3 vH = normalize(vV + vL);
+	//specular = pow(saturate(dot(vH, vN)), specularLevel);
+	float3 vR = reflect(-vL, vN);
+	specular = pow(saturate(dot(vR, vV)), specularLevel);
+
+	// SubScatter
+	float attenu = 1000.0 * (1.0 / distance(lightPos.xyz, IN.worldPos.xyz));
+
+	float3 indirectLightComponent = float3(MaterialThickness * max(0.0, dot(-vN, vL)));  
+  indirectLightComponent += MaterialThickness * halfLambert(-vV, vL);
+  indirectLightComponent *= attenu;  
+  indirectLightComponent.r *= ExtinctionCoefficient.r;  
+  indirectLightComponent.g *= ExtinctionCoefficient.g;  
+  indirectLightComponent.b *= ExtinctionCoefficient.b;  	
+
+	float3 rim = float3(1.0 - max(0.0, dot(vV, vN)));
+  rim *= rim;
+  rim *= max(0.0, dot(vN, vL)) * SpecColor.rgb;
+
+#ifdef ATTENUATION
+	FinalColor *= attenuation;
+#endif*/
+
+	FinalColor = diffuse;
+	FinalColor += float4(indirectLightComponent, 1.0);
+  FinalColor.rgb += (rim * RimScalar * attenu * FinalColor.a );
+	FinalColor.rgb += specular.rgb  * SpecColor.rgb * attenu * FinalColor.a;
+  //FinalColor.rgb += float3( blinnPhongSpecular(vN,vL, specularLevel) * attenu * SpecColor * FinalColor.a * 0.05 );
+
+	FinalColor.rgb *= LightColor.rgb;
+
+/*
+	// compute velvet shading
+	float2 uv = float2(pow((dot(vV, vN)+1)*0.5, 2), 0.0);
+	//float2 uv = float2(dot(vV, vN), 0.5);
+	//float2 uv = float2(max(0, dot(vV, vN)), 0.5);
+	float4 diffuseTexel = tex2D(ColorSampler, uv);
+	FinalColor = diffuseTexel;
+	FinalColor.a = 1;//max(0, dot(vV, vN));
+*/
+
+/*
+	// compute an xray effect
+	float edgefalloff = 0.1;
+	float intensity = 13;
+	float opac = dot(vV, vN);
+  opac = abs(opac);
+  opac = 1.0-pow(opac, edgefalloff);
+	// use vertex color
+	FinalColor = IN.diffuse * opac * intensity;
+	FinalColor.a = IN.diffuse.a;
+	// use texture ramp for color fetch
+	//float2 uv = float2(1-opac, 0.5);
+	//float4 diffuseTexel = tex2D(ColorSampler, uv);
+	//FinalColor = diffuseTexel;
+*/
+
+/*
+	// ??? not good, still not bad enough to delete =)
+	float d = distance(cameraPos.xyz,  IN.worldPos.xyz);
+	//float3 vd = IN.viewVec; //(cameraPos - IN.worldPos ) / d;
+	d = 1.0 - (d / 300.0);
+	float strength = pow( dot(vV, vN), 2) * d;
+	FinalColor.rgb = diffuseTexel * strength * 1 * IN.diffuse;
+	FinalColor.a = 1.0 * IN.diffuse.a;
+*/
+
+/*
+	// posterize effect 
+	float numColors = 8;
+	float gamma = 0.6;
+	float3 tc = FinalColor.rgb;
+	tc = pow(tc, gamma);
+	tc = tc * numColors;
+	tc = floor(tc);
+	tc = tc / numColors;
+	tc = pow(tc, 1.0/gamma);
+	FinalColor = float4(tc, FinalColor.a);
+*/
+
+#ifdef FOG
+/*
+  // Apply linear fog
+	if(IN.depth < fogEnd) {
+		FinalColor = lerp(FinalColor, fogColor, (IN.depth-fogStart)/(fogEnd-fogStart));
+		FinalColor.a = IN.diffuse.a;
+	} else {
+		FinalColor = fogColor;
+	}
+*/	
+
+	// Apply exp2 fog
+	// fogFactor = exp(-(density * z)2)
+	// final equation: fogFactor = exp2(density2 * z2 * 1.442695) 
+	float fogFactor = exp(-fogDensity * fogDensity * IN.depth * IN.depth * 1.442695);
+	fogFactor = clamp(fogFactor, 0.0, 1.0);
+	FinalColor = mix(fogColor, FinalColor, fogFactor);
+	FinalColor.a = IN.diffuse.a;// * diffuseTexel.a;
+#endif
+
+	return FinalColor;
+}
+
+technique Technique_SubScatter {   
+  pass Pass_0 {
+    VertexProgram = compile arbvp1 VS_SubScatter();
+    FragmentProgram = compile arbfp1 PS_SubScatter();
+  }
+}

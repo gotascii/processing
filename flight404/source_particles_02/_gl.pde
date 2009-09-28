@@ -14,7 +14,7 @@ void initGL(){
   pgl.endGL();
 }
 
-void renderImage( Vec3D _loc, float _diam, color _col, float _alpha ){
+void renderImage( PVector _loc, float _diam, color _col, float _alpha ){
   gl.glPushMatrix();
   gl.glTranslatef( _loc.x, _loc.y, _loc.z );
   pov.glReverseCamera();
@@ -25,7 +25,7 @@ void renderImage( Vec3D _loc, float _diam, color _col, float _alpha ){
 }
 
 // This will allow you to draw images that are oriented to the floor plane.
-void renderImageOnFloor( Vec3D _loc, float _diam, color _col, float _aa ){
+void renderImageOnFloor( PVector _loc, float _diam, color _col, float _aa ){
   gl.glPushMatrix();
   gl.glTranslatef( _loc.x, _loc.y, _loc.z );
   gl.glScalef( _diam, _diam, _diam );
@@ -37,7 +37,7 @@ void renderImageOnFloor( Vec3D _loc, float _diam, color _col, float _aa ){
 
 // This will allow you to specify a rotation for images that are oriented perpendicular to the eyeNormal 
 // which is the vector pointing from the camera's eye to the camera's point of interest.
-void renderImageAndRotate( Vec3D _loc, float _diam, color _col, float _aa, float _rot ){
+void renderImageAndRotate( PVector _loc, float _diam, color _col, float _aa, float _rot ){
   gl.glPushMatrix();
   gl.glTranslatef( _loc.x, _loc.y, _loc.z );
   gl.glRotatef( degrees( _rot ), pov.eyeNormal.x, pov.eyeNormal.y, pov.eyeNormal.z );

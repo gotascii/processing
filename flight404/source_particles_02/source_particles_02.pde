@@ -11,14 +11,14 @@
 // barbariangroup.com
 
 // features:
-//           Toxi's magnificent Vec3D library
+//           Toxi's magnificent PVector library
 //           perlin noise flow fields
 //           ribbon trails
 //           OpenGL additive blending
 //           OpenGL display lists
 //
 // 
-// Uses the very useful Vec3D library by Karsten Schmidt (toxi)
+// Uses the very useful PVector library by Karsten Schmidt (toxi)
 // You can download it at http://code.google.com/p/toxiclibs/downloads/list
 //
 // Please post suggestions and improvements at the flight404 blog. When nicer/faster/better
@@ -47,25 +47,21 @@
 // Loaded images are now in the Images class. Organizational change more than a functional one.
 // Saves out image sequences when the 's' key is pressed.  Hit 's' again to turn of feature.
 
-
 import damkjer.ocd.*;
-import toxi.geom.*;
 import processing.opengl.*;
 import javax.media.opengl.*;
+import com.sun.opengl.util.texture.*;
 
 PGraphicsOpenGL pgl;
 GL gl;
-
 POV pov;
 Images images;
 Emitter emitter;
-Cursor mouse;
+PVector gravity;
 
-Vec3D gravity;
 float floorLevel;
-
-
-
+float minNoise = 0.499;
+float maxNoise = 0.501;
 
 int counter;
 int saveCount;
@@ -73,84 +69,78 @@ int xSize, ySize;
 int xMid, yMid;
 
 boolean SAVING;
-  
 boolean ALLOWNEBULA;
-boolean ALLOWGRAVITY  = true;
+boolean ALLOWGRAVITY = true;
 boolean ALLOWPERLIN;
 boolean ALLOWTRAILS;
-boolean ALLOWFLOOR    = true;
-
+boolean ALLOWFLOOR = true;
 
 void setup(){
-  size( 750, 750, OPENGL );
-  hint( ENABLE_OPENGL_4X_SMOOTH );
-  colorMode( RGB, 1.0 );
+  size(750, 750, OPENGL);
+  hint(ENABLE_OPENGL_4X_SMOOTH);
+  colorMode(RGB, 1.0);
 
-  pgl           = (PGraphicsOpenGL) g;
-  gl            = pgl.gl;
+  pgl = (PGraphicsOpenGL)g;
+  gl = pgl.gl;
   gl.setSwapInterval(1);
 
   initGL();
+
+  xSize = width;
+  ySize = height;
+  xMid = xSize/2;
+  yMid = ySize/2;
   
-  xSize         = width;
-  ySize         = height;
-  xMid          = xSize/2;
-  yMid          = ySize/2;
-  
-  pov           = new POV( this );
-  images        = new Images();
-  emitter       = new Emitter();
-  mouse         = new Cursor();
-  gravity       = new Vec3D( 0, .5, 0 );
-  floorLevel    = 0;
+  pov = new POV(this);
+  images = new Images();
+  emitter = new Emitter();
+  gravity = new PVector(0, .9, 0);
+  floorLevel = 0;
 }
 
 void draw(){
-  background( 0.0 );
+  background(0.0);
   pov.exist();
-  mouse.exist();
-  
-  gl.glClear( GL.GL_DEPTH_BUFFER_BIT ) ;
-  gl.glEnable( GL.GL_DEPTH_TEST );
+
+  gl.glClear(GL.GL_DEPTH_BUFFER_BIT) ;
+  gl.glEnable(GL.GL_DEPTH_TEST);
   gl.glDepthMask(true);
-  if( ALLOWFLOOR )
+  if(ALLOWFLOOR)
     drawFloor();
     
   gl.glDepthMask(false);
-  gl.glEnable( GL.GL_BLEND );
-  gl.glBlendFunc(GL.GL_SRC_ALPHA,GL.GL_ONE);
-  
+  gl.glEnable(GL.GL_BLEND);
+  gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
+
   pgl.beginGL();
   emitter.exist();
   pgl.endGL();
-  
-  if( mousePressed && mouseButton == LEFT )
-    emitter.addParticles( 10 );
-  
+
+  if(mousePressed && mouseButton == LEFT)
+    emitter.addParticles(10);
+
   gl.glDepthMask(true);
-  counter ++;
-  
-  if( SAVING ){
-    saveFrame( "images/image_" + saveCount + ".png" );
-    saveCount ++;
+  counter++;
+
+  if(SAVING) {
+    saveFrame("images/image_" + saveCount + ".png");
+    saveCount++;
   }
 }
 
-
-void drawFloor(){
+void drawFloor() {
   pgl.beginGL();
   gl.glBegin(GL.GL_POLYGON);
-  gl.glColor3f(0,0,0);
-  gl.glTexCoord2f(0,0);    gl.glVertex3f(-xSize * 2.0, floorLevel + .5, -xSize * 2.0);
-  gl.glTexCoord2f(1,0);    gl.glVertex3f( xSize * 2.0, floorLevel + .5, -xSize * 2.0);
-  gl.glTexCoord2f(1,1);    gl.glVertex3f( xSize * 2.0, floorLevel + .5,  xSize * 2.0);
-  gl.glTexCoord2f(0,1);    gl.glVertex3f(-xSize * 2.0, floorLevel + .5,  xSize * 2.0);
+  gl.glColor3f(0, 0, 0);
+  gl.glTexCoord2f(0, 0); gl.glVertex3f(-xSize * 2.0, floorLevel + .5, -xSize * 2.0);
+  gl.glTexCoord2f(1, 0); gl.glVertex3f(xSize * 2.0, floorLevel + .5, -xSize * 2.0);
+  gl.glTexCoord2f(1, 1); gl.glVertex3f(xSize * 2.0, floorLevel + .5,  xSize * 2.0);
+  gl.glTexCoord2f(0, 1); gl.glVertex3f(-xSize * 2.0, floorLevel + .5,  xSize * 2.0);
   gl.glEnd();
   pgl.endGL();
 }
 
-
-void keyPressed(){
+void keyPressed() {
   if( key == 'g' || key == 'G' )
     ALLOWGRAVITY = !ALLOWGRAVITY;
     
@@ -182,18 +172,11 @@ void mouseReleased(){
   }
 }
 
-
-
-float minNoise = 0.499;
-float maxNoise = 0.501;
-float getRads(float val1, float val2, float mult, float div){
+float getRads(float val1, float val2, float mult, float div) {
   float rads = noise(val1/div, val2/div, counter/div);
-  
   if (rads < minNoise) minNoise = rads;
   if (rads > maxNoise) maxNoise = rads;
-  
   rads -= minNoise;
   rads *= 1.0/(maxNoise - minNoise);
-
   return rads * mult;
 }

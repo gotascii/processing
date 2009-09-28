@@ -1,6 +1,6 @@
-import javax.media.opengl.*;
+//import javax.media.opengl.*;
 import processing.opengl.*;
-import com.sun.opengl.util.texture.*;
+//import com.sun.opengl.util.texture.*;
 
 int count = 1;
 float theta = 0;
@@ -9,8 +9,6 @@ PImage ground;
 
 void setup() {
   size(700, 600, OPENGL);
-  hint(ENABLE_OPENGL_4X_SMOOTH);
-  smooth();
   PVector gravity = new PVector(0, 1);
   arcs = new Arc[count];
   for(int i = 0; i < count; i++) {
@@ -19,7 +17,7 @@ void setup() {
     float vy = -random(15, 30);
     float radius = random(20, 40);
     PVector vel = new PVector(vx, vy);
-    arcs[i] = new Arc(80, radius, rot, vel, gravity);
+    arcs[i] = new Arc(10, 300, rot, vel, gravity);
   }
   ground = loadImage("ground.png");
   textureMode(NORMALIZED);
@@ -29,31 +27,27 @@ void draw() {
   camera(1500, -300, 500, width/2, height/2, 0, 0, 1, 0);
   background(208);
   translate(width/2, height/2);
-
   lightSpecular(204, 204, 204);
   directionalLight(102, 102, 102, 0, 0, -1);
   specular(255, 255, 255);
   shininess(70);
-
+  draw_floor();
   rotateY(theta);
   theta += 0.01;
-  draw_floor();
   for(int i = 0; i < count; i++) {
     arcs[i].draw();
   }
 }
 
 void draw_floor() {
-  pushMatrix();
   beginShape();
-  tint(255, 100);
+  tint(255, 80);
   texture(ground);
   vertex(-2000, 0, -2000, 0, 0);
   vertex(2000, 0, -2000, 1, 0);
   vertex(2000, 0, 2000, 1, 1);
   vertex(-2000, 0, 2000, 0, 1);
   endShape();
-  popMatrix();
 }
 
 class Arc {

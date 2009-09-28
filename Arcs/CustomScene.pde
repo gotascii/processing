@@ -57,7 +57,6 @@ class CustomScene extends vitamin.fx.Effect {
     vgl.setDepthMask(true);
     vgl.setShader(subsurfaceID);
     vgl.setParameter4f("lightPos", lightPos);
-
     vgl.setParameter3f("cameraPos", cam.getPosition());
     vgl.setParameter1f("kC", 0);
     vgl.setParameter1f("kL", 0);

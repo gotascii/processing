@@ -16,7 +16,6 @@ class Nebula{
     loc = new PVector();
     loc.set(_loc);
     vel = PVector.mult(pov.eyeNormal, 2);
-//    vel = new PVector(pov.eyeNormal.scale(2.0));
     radius = random(_radius*.8, _radius*1.75);
     scaleFac = random(1.005, 1.10);
     age = 0;

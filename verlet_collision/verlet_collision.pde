@@ -5,6 +5,7 @@ float diameter = radius * 2;
 float gradius = 100;
 float gdiameter = gradius * 2;
 boolean nudge = false;
+boolean grav = true;
 
 void setup() {
   size(800, 800, P3D);
@@ -22,6 +23,14 @@ void draw() {
     PVector mv = new PVector((mouseX - width/2), (mouseY - height/2));
     PVector dv = PVector.sub(mv, coords);
     dv.mult(0.01);
+    force.add(dv);
+  }
+
+  if(grav) {
+    float f = 100/gravity.dist(coords);
+    PVector dv = PVector.sub(gravity, coords);
+    dv.normalize();
+    dv.mult(f);
     force.add(dv);
   }
 

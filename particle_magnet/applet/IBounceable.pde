@@ -1,0 +1,3 @@
+interface IBounceable {
+  void bounce();
+}

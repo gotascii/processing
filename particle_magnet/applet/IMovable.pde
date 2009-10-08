@@ -1,0 +1,3 @@
+interface IMovable {
+  void move();
+}

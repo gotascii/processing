@@ -1,0 +1,3 @@
+interface IActable {
+  void act();
+}

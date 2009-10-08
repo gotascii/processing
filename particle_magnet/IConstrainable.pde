@@ -1,0 +1,3 @@
+interface IConstrainable {
+  void constrain();
+}

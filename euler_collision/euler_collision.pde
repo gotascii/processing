@@ -4,6 +4,7 @@ float da = ra * 2;
 float db = rb * 2;
 PVector a, b, v;
 boolean move = false;
+boolean gravity = true;
 
 void setup() {
   size(800, 800, P3D);
@@ -20,6 +21,14 @@ void draw() {
     PVector mv = new PVector((mouseX - width/2), (mouseY - height/2));
     PVector dv = PVector.sub(mv, a);
     dv.mult(0.01);
+    v.add(dv);
+  }
+
+  if(gravity) {
+    float f = 50/b.dist(a);
+    PVector dv = PVector.sub(b, a);
+    dv.normalize();
+    dv.mult(f);
     v.add(dv);
   }
 

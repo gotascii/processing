@@ -11,16 +11,16 @@ void draw() {
 }
 
 void circles() {
-  // Particle 1
+  // Gravity
   PVector c1 = new PVector(0, 0);
   float d1 = 100;
   float r1 = d1/2;
 
-  // Particle 2
-  PVector c2 = new PVector(0, -50);
-  PVector v = new PVector(-100, 50);
+  // Particle
+  PVector c2 = new PVector(0, -70);
 
-  // red, velocity
+  // v, red, velocity
+  PVector v = new PVector(-100, 100);
   stroke(255, 0, 0);
   line(c2.x, c2.y, c2.x + v.x, c2.y + v.y);
 
@@ -31,12 +31,12 @@ void circles() {
   ellipse(c1.x, c1.y, d1, d1);
   ellipse(c2.x, c2.y, d2, d2);
 
+  // n, green, difference
   PVector n = new PVector(c2.x - c1.x, c2.y - c1.y);
-
-  // green, difference
   stroke(0, 255, 0);
   line(c1.x, c1.y, c1.x + n.x, c1.y + n.y);
 
+  // blue, reflection
   PVector reflection = reflect(n, v);
   stroke(0, 0, 255);
   line(c2.x, c2.y, c2.x + reflection.x, c2.y + reflection.y);

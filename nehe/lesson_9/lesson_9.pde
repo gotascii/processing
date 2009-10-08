@@ -115,6 +115,7 @@ boolean initGL() {
   gl.glClearColor(0, 0, 0, 0);
   gl.glClearDepth(1);
   gl.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
+  gl.setSwapInterval(1);
   return true;
 }
 

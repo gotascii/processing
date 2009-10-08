@@ -21,11 +21,13 @@ void setup(){
 
 void draw(){
   background(255);
-  gravity.exist();
   iterateList();
+  gravity.exist();
   if (dragging){
-    particles.add(new Particle(count, particles, mouseX, mouseY));
-    count ++;
+    if (count < maxParticles) {
+      particles.add(new Particle(count, particles, mouseX, mouseY));
+      count ++;
+    }
   }
 }
 

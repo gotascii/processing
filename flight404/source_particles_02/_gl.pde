@@ -40,8 +40,8 @@ void renderImageOnFloor( PVector _loc, float _diam, color _col, float _aa ){
 void renderImageAndRotate( PVector _loc, float _diam, color _col, float _aa, float _rot ){
   gl.glPushMatrix();
   gl.glTranslatef( _loc.x, _loc.y, _loc.z );
-  gl.glRotatef( degrees( _rot ), pov.eyeNormal.x, pov.eyeNormal.y, pov.eyeNormal.z );
   pov.glReverseCamera();
+  gl.glRotatef( degrees( _rot ), pov.eyeNormal.x, pov.eyeNormal.y, pov.eyeNormal.z );
   gl.glScalef( _diam, _diam, _diam );
   gl.glColor4f( red(_col), green(_col), blue(_col), _aa );
   gl.glCallList( squareList );

@@ -1,7 +1,7 @@
 import processing.xml.*;
 
 void setup() {
-  size(800, 400);
+  size(508, 600);
   smooth();
   drawMap();
 }
@@ -10,13 +10,15 @@ void draw() {
 }
 
 void drawMap() {
-  background(255);
+  background(0);
 
-  int freq = 0;
-  int amp = 8;
+  float freq = 0;
+  float amp = random(2, 10);
   float x = width/2;
   float y = height/2;
-  float j = random(1);
+  float j = random(1); 
+  float dj = random(0.01, 0.1);
+  float sj = random(1.001, 1.01);
 
   HashMap hm = serverCounts(1000);
   Iterator i = hm.entrySet().iterator();
@@ -31,12 +33,12 @@ void drawMap() {
     if (xmf <= 0 || xpf >= width || ymf <= 0 || ypf >= height) {
       x = width/2;
       y = height/2;
-      j += 0.5;
     }
 
     drawServer(x, y, freq, amp);
 
-    j += 0.13;
+    j += dj;
+    j *= sj;
     x = x + (cos(j) * freq);
     y = y + (sin(j) * freq);
   }
@@ -53,10 +55,10 @@ void drawServer(float x, float y, float freq, float amp) {
 
 HashMap serverCounts(int count) {
   String query = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20flickr.photos.interestingness(" + count + ")&format=xml";
-  HashMap hm = new HashMap();
   XMLElement xml = new XMLElement(this, query);
   XMLElement results = xml.getChild(1);
 
+  HashMap hm = new HashMap();
   for(int i = 0; i < results.getChildCount(); i++) {
     XMLElement result = results.getChild(i);
     String server = result.getStringAttribute("server");

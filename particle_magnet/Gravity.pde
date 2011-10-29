@@ -73,8 +73,8 @@ class Gravity extends Movable implements IDisplayable, IConstrainable {
     pushMatrix();
     translate(coords.x, coords.y, coords.z);
     face_cam();
-    //    opengl();
-    simple();
+    opengl();
+//    simple();
     popMatrix();
   }
 
@@ -90,7 +90,7 @@ class Gravity extends Movable implements IDisplayable, IConstrainable {
 
     tparticle.enable();
     tparticle.bind();
-    gl.glColor4f(0.9, 0.2, 0.2, 1);
+    gl.glColor4f(0.2, 0.2, 0.2, 0.0);
     gl.glScalef(diameter*2, diameter*2, diameter*2);
     for(int i = 0; i < 3; i++) {
       gl.glBegin(GL.GL_POLYGON);

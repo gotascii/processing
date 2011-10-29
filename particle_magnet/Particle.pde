@@ -7,8 +7,8 @@ class Particle extends Movable implements IDisplayable {
   }
 
   void display() {
-    simple();
-//    opengl();
+//    simple();
+    opengl();
 //    ribbon_tail();
 //    line_tail();
   }

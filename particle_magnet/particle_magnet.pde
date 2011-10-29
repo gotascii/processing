@@ -41,8 +41,8 @@ void setup() {
 
   pgl = (PGraphicsOpenGL)g;
   gl = pgl.beginGL();
-//  gl.glDepthMask(false);
-  gl.glDepthMask(true);
+  gl.glDepthMask(false);
+//  gl.glDepthMask(true);
   pgl.endGL();
 
   electrons = new Particles();
@@ -56,14 +56,14 @@ void setup() {
     electrons.add(p);
   }
 
-  gravitons.add(new Gravity(cam, 1, new PVector(0, 50, 0), -7, 200, -80, electrons));
-//  gravitons.add(new Gravity(cam, 1, new PVector(0, -50, 0), -7, 100, -80, electrons));
-//  gravitons.add(new Gravity(cam, 1, new PVector(50, 0, 0), -7, 100, -80, electrons));
+//  gravitons.add(new Gravity(cam, 1, new PVector(0, 50, 0), -7, 200, -80, electrons));
+  gravitons.add(new Gravity(cam, 1, new PVector(0, -50, 0), -7, 100, -80, electrons));
+//  gravitons.add(new Gravity(cam, 1, new PVector(50, 0, 0), -7, 300, -80, electrons));
 //  gravitons.add(new Gravity(cam, 1, new PVector(-50, 0, 0), -7, 100, -80, electrons));
 
 //  gluiton.add(new Gravity(cam, 1, new PVector(-100, -100, 0), 1, 50, -20, gravitons));
 //  gluiton.add(new Gravity(cam, 1, new PVector(100, -100, 0), 1, 30, -100, gravitons));
-//  gluiton.add(new Gravity(cam, 1, new PVector(0, 100, 0), 1, 50, -200, gravitons));
+  gluiton.add(new Gravity(cam, 1, new PVector(0, 100, 0), 1, 50, -200, gravitons));
 
   keyed['z'] = true;
 }
@@ -111,7 +111,7 @@ void draw() {
 //  }
 
   electrons.display();
-//  magnetism.display();
+  magnetism.display();
   gravitons.display();
 //  gluiton.display();
 }

@@ -66,7 +66,7 @@ class Magnetism implements IDisplayable {
           float distance = pi.dist(pj);
           if (distance < 30) {
             red_dots(pi, pj, distance);
-//            fading_lines(pi, pj, distance);
+            fading_lines(pi, pj, distance);
             visited[j][i] = true;
           }
         }
